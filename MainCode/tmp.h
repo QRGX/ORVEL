@@ -75,6 +75,8 @@ void setupTemp() {
   Serial.println(mySensor.readRegister(BME280_CTRL_MEAS_REG), HEX);
   Serial.print("ctrl_hum(0xF2): 0x");
   Serial.println(mySensor.readRegister(BME280_CTRL_HUMIDITY_REG), HEX);
+
+  Serial.println("Temperature/Humidity setup done.");
 }
 
 void updateValues() {

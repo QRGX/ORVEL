@@ -45,14 +45,8 @@ void dmpDataReady() {
 
 void setupAccl() {
 	// join I2C bus (I2Cdev library doesn't do this automatically)
-  /*
-    #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-        Wire.begin();
-        Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
-    #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
-        Fastwire::setup(400, true);
-    #endif
-	*/
+    Wire.begin();
+    Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 	//Serial.begin(115200);
     while (!Serial);
 	
@@ -105,12 +99,38 @@ void setupAccl() {
 void pullData() {
 	// if programming failed, don't try to do anything
   if (!dmpReady) return;
-	
+  if(!mpuInterrupt) return;
+
+  //Reset intrrupt, get current status, and queue size
+  mpuInterrupt = false;
+  mpuIntStatus = mpu.getIntStatus();
+  fifoCount = mpu.getFIFOCount();
+
+  //Check for queue overflow
+  if((mpuIntStatus & 0x10) || fifoCount == 1024) {
+    mpu.resetFIFO();
+    Serial.println("FIFO OVERFLOW!");
+    return;
+  }
+  //Check for data ready
+  if(!(mpuIntStatus & 0x02)) return;
+  
+  //Wait for full packet to be availible
+  while(fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
+  mpu.getFIFOBytes(fifoBuffer, packetSize);
+  
+  //NOTE FOR LATER: add something to handle if there are multiple packets availible, and look at modifying packet rate
+  
+
 	mpu.dmpGetQuaternion(&q, fifoBuffer);
 	mpu.dmpGetAccel(&aa, fifoBuffer);
 	mpu.dmpGetGravity(&gravity, &q);
 	mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
 	mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
+  mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+
+  blinkState = !blinkState;
+  digitalWrite(LED_PIN, blinkState);
 }
 
 #endif

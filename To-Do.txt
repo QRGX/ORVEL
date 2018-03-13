@@ -1,0 +1,15 @@
+To-Do List:
+-Figure out how to best regulate power for the 6V servo
+	-Have ~12V coming from the PS
+	-Need to figure out what the expected current draw is,  will dictate the choice
+-Get/build a voltage regulator for the analog water pressure sensor
+-Build GUI
+	-Update parsing
+	-Improve stability and reliability
+-Figure out how to calibrate the accelerometer
+-Figure out how to calibrate the temperature/humidity sensor
+-Figure out how to read (serial) measurements from caliper
+-Look into getting a PCB printed for components
+-Figure out how to put fuses in the circuit
+-Figure out how to seal box
+-Split Ethernet cable for serial and 3-pin video feed 

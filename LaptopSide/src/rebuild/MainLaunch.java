@@ -8,12 +8,13 @@ import javafx.scene.layout.GridPane;
 
 
 public class MainLaunch extends Application {
+	protected GridPane root;
 	@Override
 	public void start(Stage primaryStage) {
 		try {	
-			GridPane root = (GridPane)FXMLLoader.load(MainLaunch.class.getResource("MainScreen.fxml"));
+			root = (GridPane)FXMLLoader.load(MainLaunch.class.getResource("MainScreen.fxml"));
 			Scene scene = new Scene(root);
-			scene.getStylesheets().add("rebuild/application.css");
+			//scene.getStylesheets().add("rebuild/application.css");
 			primaryStage.setScene(scene);
 			primaryStage.setMaximized(true);
 			primaryStage.centerOnScreen();

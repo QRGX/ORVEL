@@ -57,16 +57,9 @@ public class dataManager {
 		Platform.runLater(new Runnable()  {
 			@Override
 			public void run() {
-				cont.orginDist.setText("Distance from origin: " + Float.toString(distToOrg) + "m");
-				cont.travDist.setText("Distance travelled: " + Float.toString(distTrav) + "m");
-				cont.batLevel.setText("Battery state: " + df.format(battState) + " V");
-				cont.hdop.setText("HDOP: " + Float.toString(HDOP));
 				cont.bytesAvail.setText("Bytes availible: " + btsAv);
 				cont.packetsR.setText("Packets received: " + comm.packsIn);
 				cont.packRateLabel.setText("Pack rate: " + df.format(comm.packRate) + " packs/s");
-				cont.speed.setText("Speed: " + speed);
-				cont.vHDOP.setText("Time since valid HDOP: " + sValid + "s");
-				cont.fixTp.setText("Fix Type: " + fixType);
 				if(comm != null && comm.getState())
 					cont.connState.setText("Connection state: Connected to " + comm.portName);
 				else

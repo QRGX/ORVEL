@@ -1,4 +1,4 @@
-package tests;
+package rebuild;
 
 import java.util.ArrayList;
 import javafx.fxml.FXML;
@@ -8,6 +8,7 @@ import javafx.scene.text.Text;
 
 public class realTimePlot {
 	Canvas plotCan;
+	GUIController cont;
 	private boolean canInit = false;
 	double canWidth, canHeight, xCanOffset, yCanOffset, plotHeight, plotWidth;
 	double maxY, minY, xScale, yScale;
@@ -21,8 +22,9 @@ public class realTimePlot {
 	static final float XAxisOffset = (float) 0.2, YAxisOffset = (float) 0.2;
 	static final float XMarginRatio = (float) 0.05, YMarginRatio = (float) 0.05;
 	
-	public realTimePlot(Canvas _plotCan) {
+	public realTimePlot(GUIController _cont, Canvas _plotCan) {
 		plotCan = _plotCan;
+		cont = _cont;
 	}
 	
 	//Point class definition
@@ -72,13 +74,14 @@ public class realTimePlot {
 		xLabel.setX(xLabelCoord + xCanOffset - xLabel.getLayoutBounds().getWidth() / 2);
 		Text yLabel = new Text(xCanOffset + XMargin - 25, yLabelCoord + yCanOffset, yAxisLabel);
 		yLabel.setRotate(-90);
-		plotTest.root.getChildren().addAll(xLabel, yLabel);
+		cont.MapPane.getChildren().addAll(xLabel, yLabel);
 		canInit = true;
 	}
 	
 	//Utility methods
 	double getAverage(double a, double b) {return (a + b) / 2; }
 	private boolean checkLimits(point newPoint) {return newPoint.y < minY || newPoint.y > maxY; }
+	public boolean getCanStat() {return canInit; }
 	private void calcScale() {
 		if(!canInit) plotAxis();
 		for(point pt : data) {
@@ -104,9 +107,7 @@ public class realTimePlot {
 	}
 	private void plotPoint(point newPoint) {
 		if(newPoint.x < XMargin + 1) return;
-		point coord = new point(newPoint.x, canHeight - (YMargin + 2 + Math.abs(minY)*yScale + newPoint.y*yScale));
-		System.out.println(coord);
-		gc.strokeRect(coord.x, coord.y, 1, 1);
+		gc.strokeRect(newPoint.x, canHeight - (YMargin + 2 + Math.abs(minY)*yScale + newPoint.y*yScale), 1, 1);
 	}
 	
 	//Data management methods

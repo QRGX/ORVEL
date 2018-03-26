@@ -1,10 +1,5 @@
 package rebuild;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -73,6 +68,7 @@ public class GUIController {
 	
 	//Map variables
 	float baseXOffset, baseYOffset;
+	realTimePlot plot;
 	//public Canvas mapCan;
 	private GraphicsContext gc;
 	
@@ -94,27 +90,30 @@ public class GUIController {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		/*
-		TextAreaHandler taHandle = new TextAreaHandler();
-		taHandle.setTextArea(infoPane);
-		log.addHandler(taHandle);
-		log.addHandler(filehandle); */
 		log.fine("Initializing.");
 		xbeeWarn = GPSWarn = battWarn = serialWarn = mapWarn = true;
 	}
 	
 	//Initializes the canvas
 	public void initCanvas() {
-		if(mapCan != null)
-			return;
+		if(mapCan != null) return;
 		mapCan = new Canvas(MapPane.getWidth(), MapPane.getHeight());
 		MapPane.getChildren().add(mapCan);
 		mapCan.setTranslateX(MapPane.getLayoutX());
 		mapCan.setTranslateY(MapPane.getLayoutY());
-		gc = mapCan.getGraphicsContext2D();
-		gc.setStroke(Color.RED);
-		gc.setLineWidth(5);
+		initPlot();
 		log.info("Canvas initialized.");
+	}
+	private void initPlot() {
+		plot = new realTimePlot(this, mapCan);
+		plot.initialize();
+	}
+	@FXML
+	public void testDraw() {
+		if(mapCan == null) initCanvas();
+		if(!plot.getCanStat()) plot.plotAxis();
+		plot.newPoint(Math.random());
+		plot.replot();
 	}
 	@FXML
 	public void checkThread() {
@@ -134,21 +133,6 @@ public class GUIController {
 		}
 		log.info("Interface closed.");
 		((Stage)(closeButt.getScene().getWindow())).close();
-	}
-	private float getScale(Image im) {
-		double canWid = mapCan.getWidth();
-		double canHt = mapCan.getHeight();
-		double imWid = im.getWidth();
-		double imHt = im.getHeight();
-		float widFac = (float) (imWid / canWid);
-		float htFac = (float) (imHt / canHt);
-		log.finer("Returning scale");
-		if(widFac > htFac) {
-			baseYOffset = (float)(canHt - imHt / widFac);
-			return  1 / widFac;
-		}
-		baseXOffset = (float)(canWid - imWid / htFac);
-		return 1 / htFac;
 	}
 	public void updateCons() {
 		ArrayList<String> cons = comm.getCommList();
@@ -197,10 +181,7 @@ public class GUIController {
 			@Override
 			public void run() {
 				serialState.setText("Serial State: " + getStateStr(serialWarn));
-				xbeeState.setText("Xbee State: " + getStateStr(xbeeWarn));
-				GPSState.setText("GPS State: " + getStateStr(GPSWarn));
 				battState.setText("Battery State: " + getStateStr(battWarn));
-				mapState.setText("Out of map: " + getStateStr(mapWarn));
 			}
 		});
 	}
@@ -214,10 +195,7 @@ public class GUIController {
 			@Override
 			public void run() {
 				serialState.setStyle(getStyleStr(serialWarn));
-				xbeeState.setStyle(getStyleStr(xbeeWarn));
-				GPSState.setStyle(getStyleStr(GPSWarn));
 				battState.setStyle(getStyleStr(battWarn));
-				mapState.setStyle(getStyleStr(mapWarn));
 			}
 		});	
 	}

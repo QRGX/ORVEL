@@ -5,6 +5,7 @@
 #define accl_h
 
 #include "I2Cdev.h"
+#include "util.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
@@ -33,6 +34,9 @@ VectorFloat gravity;    // [x, y, z]            gravity vector
 float euler[3];         // [psi, theta, phi]    Euler angle container
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
+float accel[3], avg = 0;
+int ind = 0;
+
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
 // ================================================================
@@ -41,14 +45,25 @@ volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin h
 void dmpDataReady() {
     mpuInterrupt = true;
 }
+float retAvg() {
+  return norm(accel[0], accel[1], accel[2]);
+}
+float getAvg(float newVal) {
+  if(++ind > 2)
+    ind = 0;
+  if(newVal > avg * 1.5)
+    accel[ind] = newVal + (newVal - avg) * .75;
+  else
+    accel[ind] = newVal;
+
+  return avg = retAvg();
+}
 
 
 void setupAccl() {
 	// join I2C bus (I2Cdev library doesn't do this automatically)
     Wire.begin();
     Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
-	//Serial.begin(115200);
-    while (!Serial);
 	
 	// initialize device
     Serial.println(F("Initializing I2C devices..."));
@@ -60,15 +75,28 @@ void setupAccl() {
     Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 	
 	// load and configure the DMP
-    Serial.println(F("Initializing DMP..."));
-    devStatus = mpu.dmpInitialize();
-
+    devStatus = -1;
+    while(devStatus != 0) {
+      delay(1500);
+      Serial.println(F("Initializing DMP..."));
+      devStatus = mpu.dmpInitialize();
+    }
     // supply your own gyro offsets here, scaled for min sensitivity
-    mpu.setXGyroOffset(220);
-    mpu.setYGyroOffset(76);
-    mpu.setZGyroOffset(-85);
-    mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
-	
+    mpu.setXGyroOffset(91);
+    mpu.setYGyroOffset(12);
+    mpu.setZGyroOffset(33);
+    
+    // Accelerometer offsets
+    /*
+    mpu.setXAccelOffset(-444);
+    mpu.setYAccelOffset(-1620);
+    mpu.setZAccelOffset(1700); 
+    */
+    mpu.setXAccelOffset(0);
+    mpu.setYAccelOffset(0);
+    mpu.setZAccelOffset(1600); 
+    
+  
 	// make sure it worked (returns 0 if so)
     if (devStatus == 0) {
         // turn on the DMP, now that it's ready
@@ -77,7 +105,8 @@ void setupAccl() {
 
         // enable Arduino interrupt detection
         Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
-        attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmpDataReady, RISING);
+        //attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmpDataReady, RISING);
+        attachInterrupt(INTERRUPT_PIN, dmpDataReady, RISING);
         mpuIntStatus = mpu.getIntStatus();
 
         // set our DMP Ready flag so the main loop() function knows it's okay to use it

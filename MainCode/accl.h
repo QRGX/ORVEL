@@ -136,6 +136,9 @@ void pullData() {
   fifoCount = mpu.getFIFOCount();
 
   //Check for queue overflow
+  //if(fifoCount > 512)
+    //mpu.resetFIFO();
+  
   if((mpuIntStatus & 0x10) || fifoCount == 1024) {
     mpu.resetFIFO();
     Serial.println("FIFO OVERFLOW!");
@@ -153,13 +156,13 @@ void pullData() {
 
 	mpu.dmpGetQuaternion(&q, fifoBuffer);
 	mpu.dmpGetAccel(&aa, fifoBuffer);
-	mpu.dmpGetGravity(&gravity, &q);
-	mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-	mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-  mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+	//mpu.dmpGetGravity(&gravity, &q);
+	//mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
+	//mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
+  //mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
 
-  blinkState = !blinkState;
-  digitalWrite(LED_PIN, blinkState);
+  //blinkState = !blinkState;
+  //digitalWrite(LED_PIN, blinkState);
 }
 
 #endif

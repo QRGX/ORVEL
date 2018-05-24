@@ -1,0 +1,23 @@
+Notes to self for troubleshooting
+
+Connection problems
+-If both the accelerometer and temp sensor aren't connecting
+	-Check that the SCL/SDA pins being used are those with built-in pullup resistors (i.e. pins 20 and 21)
+	-Make sure the SCL/SDA pins are plugged into the right ports
+	-Make sure that the 5V and Ground pins are in the right spot (the accelerometer has a LED, check if its lit)
+-If just the accelerometer isn't working
+	-Make sure that the following pins are all in: 
+		-Ground
+		-5V (Or 3.3 I think...)
+		-SCL
+		-SDA
+		-Interrupt (goes into pin 2, see .h def)
+	-Make sure the setup function isn't commented out
+-If just the temp sensor isn't working
+	-Make sure that all of the following pins are in:
+		-Ground
+		-5V (Or 3.3 I think...)
+		-SCL
+		-SDA
+	-Make sure the setup function isn't commented out
+	

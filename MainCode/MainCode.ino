@@ -1,6 +1,7 @@
 #include "accl.h"
 #include "tmp.h"
 #include "util.h"
+#include "servo.h"
 
 void setup() {
   Serial.begin(115200);
@@ -8,10 +9,11 @@ void setup() {
   delay(1000);
 
   setupAccl();
-  //setupTemp();
-
-  Serial.print("Initial sensitivity: ");
+  setupTemp();
   setAccel(ACCEL_VAL);
+  setupServo();
+  
+  Serial.print("Initial sensitivity: ");
 }
 long start, accelTime, tempTime;
 short loopCount;
@@ -24,18 +26,21 @@ void loop() {
 }
 
 void mediumLoop() {
-  start = micros();
-  pullData(); //Collection time measured at ~3615 us
-  accelTime = micros() - start;
-  start = micros();
-  updateValues(); //Collection time measured at ~4605 us = 4.60 ms
-  tempTime = micros() - start;
+  //start = micros();
+  pullData(); //Collection time measured at ~1790 us = 1.79 ms
+  //accelTime = micros() - start;
+  //start = micros();
+  updateValues(); //Collection time measured at ~1372 us = 1.372 ms
+  //tempTime = micros() - start;
 }
 
 void slowLoop() { //Measured at 4.67ms
   //writeTempVals();
-  //writeGNet();
+  //writeCollectionTime();
+  //testServo();
   writeGNet();
+  //writeGyroVals();
+  //writeAccelVals();
 }
 
 void writeGyroVals() {
@@ -54,8 +59,8 @@ void writeTempVals() {
   Serial.print("C, Humid: ");
   Serial.print(humid);
   Serial.print("RH, Press: ");
-  Serial.print(pressure);
-  Serial.println("Pa.");
+  Serial.print(pressure / 1000.0);
+  Serial.println("KPa.");
 }
 
 void writeNormAccelVals() {
@@ -89,7 +94,15 @@ void writeGForce() {
   Serial.println(")");
 }
 void writeGNet() {
-  Serial.println(norm(aa.x, aa.y, aa.z) / ACCEL_DIV[ACCEL_VAL]);
+  Serial.println(norm(aa.x, aa.y, aa.z) / ACCEL_DIV[ACCEL_VAL] - .17);
+}
+
+void writeCollectionTime() {
+  Serial.print("Temp time: ");
+  Serial.print(tempTime);
+  Serial.print("us , Accel time: ");
+  Serial.print(accelTime);
+  Serial.println(" us");
 }
 
 int setAccel(int val) {

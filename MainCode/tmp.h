@@ -33,7 +33,7 @@ void setupTemp() {
   //  5, 1000ms
   //  6, 10ms
   //  7, 20ms
-  mySensor.settings.tStandby = 0;
+  mySensor.settings.tStandby = 6;
 
   //filter can be off or number of FIR coefficients to use:
   //  0, filter off
@@ -46,17 +46,17 @@ void setupTemp() {
   //tempOverSample can be:
   //  0, skipped
   //  1 through 5, oversampling *1, *2, *4, *8, *16 respectively
-  mySensor.settings.tempOverSample = 1;
+  mySensor.settings.tempOverSample = 0;
 
   //pressOverSample can be:
   //  0, skipped
   //  1 through 5, oversampling *1, *2, *4, *8, *16 respectively
-  mySensor.settings.pressOverSample = 1;
+  mySensor.settings.pressOverSample = 0;
 
   //humidOverSample can be:
   //  0, skipped
   //  1 through 5, oversampling *1, *2, *4, *8, *16 respectively
-  mySensor.settings.humidOverSample = 1;
+  mySensor.settings.humidOverSample = 0;
 
   Serial.print("Program Started\n");
   Serial.print("Starting BME280... result of .begin(): 0x");
@@ -82,8 +82,8 @@ void setupTemp() {
 void updateValues() {
   tempC = mySensor.readTempC();
   pressure = mySensor.readFloatPressure();
-  altM = mySensor.readFloatAltitudeMeters();
-  humid = mySensor.readFloatHumidity();
+  //altM = mySensor.readFloatAltitudeMeters();
+  //humid = mySensor.readFloatHumidity();
 }
 
 #endif

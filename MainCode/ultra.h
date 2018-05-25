@@ -1,6 +1,7 @@
-#include "Arduino.h"
 #ifndef ultra_h
 #define ultra_h
+
+#include "Arduino.h"
 
 #define TRIG 9
 #define ECHO 10

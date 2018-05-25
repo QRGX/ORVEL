@@ -1,8 +1,8 @@
-#include "Arduino.h"
 #ifndef tmp_h
 #define tmp_h
 
-#include <stdint.h>
+#include "Arduino.h"
+#include "stdint.h"
 #include "SparkFunBME280.h"
 #include "Wire.h"
 
@@ -58,25 +58,25 @@ void setupTemp() {
   //  1 through 5, oversampling *1, *2, *4, *8, *16 respectively
   mySensor.settings.humidOverSample = 0;
 
-  Serial.print("Program Started\n");
-  Serial.print("Starting BME280... result of .begin(): 0x");
+  DEBUG_PRNT("Program Started\n");
+  DEBUG_PRNT("Starting BME280... result of .begin(): 0x");
 
   //Calling .begin() causes the settings to be loaded
   delay(10);  //Make sure sensor had enough time to turn on. BME280 requires 2ms to start up.
-  Serial.println(mySensor.begin(), HEX);
+  DEBUG_PRNTLN_C(mySensor.begin(), HEX);
 
-  Serial.print("Displaying ID, reset and ctrl regs\n");
+  DEBUG_PRNT("Displaying ID, reset and ctrl regs\n");
 
-  Serial.print("ID(0xD0): 0x");
-  Serial.println(mySensor.readRegister(BME280_CHIP_ID_REG), HEX);
-  Serial.print("Reset register(0xE0): 0x");
-  Serial.println(mySensor.readRegister(BME280_RST_REG), HEX);
-  Serial.print("ctrl_meas(0xF4): 0x");
-  Serial.println(mySensor.readRegister(BME280_CTRL_MEAS_REG), HEX);
-  Serial.print("ctrl_hum(0xF2): 0x");
-  Serial.println(mySensor.readRegister(BME280_CTRL_HUMIDITY_REG), HEX);
+  DEBUG_PRNT("ID(0xD0): 0x");
+  DEBUG_PRNTLN_C(mySensor.readRegister(BME280_CHIP_ID_REG), HEX);
+  DEBUG_PRNT("Reset register(0xE0): 0x");
+  DEBUG_PRNTLN_C(mySensor.readRegister(BME280_RST_REG), HEX);
+  DEBUG_PRNT("ctrl_meas(0xF4): 0x");
+  DEBUG_PRNTLN_C(mySensor.readRegister(BME280_CTRL_MEAS_REG), HEX);
+  DEBUG_PRNT("ctrl_hum(0xF2): 0x");
+  DEBUG_PRNTLN_C(mySensor.readRegister(BME280_CTRL_HUMIDITY_REG), HEX);
 
-  Serial.println("Temperature/Humidity setup done.");
+  DEBUG_PRNTLN("Temperature/Humidity setup done.");
 }
 
 void updateValues() {

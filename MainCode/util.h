@@ -1,17 +1,23 @@
-#include "Arduino.h"
 #ifndef util_h
 #define util_h
+#include "Arduino.h"
 
-#include<math.h>
-//#include "accl.h"
-//#include "MPU6050_6Axis_MotionApps20.h"
+//Uncomment to enable debug print statements
+#define DEBUG_MODE 1
 
-const float ACCEL_DIV[4] = {16384.0, 8192.0, 4096.0, 2048.0};
-int ACCEL_VAL = 1;
+#ifdef DEBUG_MODE
+  #define DEBUG_PRNT(x)       Serial.print(x)
+  #define DEBUG_PRNTLN(x)     Serial.println(x)
+  #define DEBUG_PRNT_C(x, y)    Serial.print(x, y)
+  #define DEBUG_PRNTLN_C(x, y)  Serial.println(x, y)
+#else
+  #define DEBUG_PRNT(x)
+  #define DEBUG_PRNTLN(x)
+  #define DEBUG_PRNT_C(x, y)
+  #define DEBUG_PRNTLN_C(x, y)
+#endif
 
-float norm(float x, float y, float z) {
-  return abs(x) + abs(y) + abs(z);
-}
-
+#define PACKET_START 's'
+#define SERVO_MOVE   'm'
 
 #endif

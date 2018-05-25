@@ -1,103 +1,46 @@
+//NOTE: This code is based on the Adafruit example code for this module
+
 #ifndef servo_h
 #define servo_h
 
-#include "Arduino.h"
-#include "DueTimer.h"
-#include "DigitalRW_Direct.h"
+#include "Wire.h"
+#include "Adafruit_PWMServoDriver.h"
 
-#define SERVO_PIN 9
-#define SLEEP 25
-int nextPeriod, currAngle = 1500;
-long lastMove = 0;
-bool high = false;
+Adafruit_PWMServoDriver controller;
 
-void syringeInterrupt();
+#define SERVO_MIN 150
+#define SERVO_MAX 600
+long currAngle = 1500, lastTime = 0;
 
 void setupServo() {
-  pinMode(SERVO_PIN, OUTPUT);
-  Timer0.attachInterrupt(syringeInterrupt);
-  Timer0.setPeriod(SLEEP);
-  Timer0.start();
-  Serial.println("Servo initialized.");
+  DEBUG_PRNTLN("Setting up servo");
+  
+  controller = Adafruit_PWMServoDriver();
+  controller.begin();
+  controller.setPWMFreq(60);
+  controller.setPWM(0, 0, currAngle);
 }
 
-void timerCheck() {
-  int i;
-  DueTimer myTimer = Timer.getAvailable();
-  Serial.print("Timer list: ");
-  for(i=0;i<9;i++)
-    Serial.print(myTimer == DueTimer(i));
-  Serial.println(" done timer list");
+void writeToServo(short servoN, long us) {
+  DEBUG_PRNT("Servo to: ");
+  DEBUG_PRNTLN(us);
+  
+  double pulseLength = 1000000; // 1 second, or 1MM 1us per second
+  pulseLength /= 60 * 4096;   // 60Hz rate and 12-bit converter
+  pulseLength = us / pulseLength;
+
+  //Make sure it doesn't exceed operating bounds
+  if(pulseLength < SERVO_MIN) pulseLength = SERVO_MIN;
+  else if(pulseLength > SERVO_MAX) pulseLength = SERVO_MAX;
+  
+  controller.setPWM(servoN, 0, pulseLength);
 }
 
 void testServo() {
-  if(millis() - lastMove < 1500) return;
-  lastMove = millis();
-  currAngle = (currAngle == 1000)? 2000 : 1000;
+  if(millis() - lastTime < 1500) return;
+  lastTime = millis();
+  currAngle = (currAngle == 2350)? 625 : 2350;
+  writeToServo(0, currAngle);
 }
-
-
-void syringeInterrupt() {
-  nextPeriod = high? SLEEP : currAngle;
-  high = !high;
-  digitalWriteDirect(SERVO_PIN, high);
-  Timer0.setPeriod(nextPeriod).start();
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-#include<Servo.h>
-
-#define SERVO_PIN 9
-#define WAIT_TIME 1500
-Servo syringeServo;
-const int servoPos[5] = {1000, 1250, 1500, 1750, 2000};
-int currPos = 0;
-long moveTime = 0;
-
-void setupServo() {
-  syringeServo.attach(SERVO_PIN);
-  Serial.println("Servo attached.");
-}
-
-void runServoTest() {
-  delay(500);
-  Serial.println("Moving to 0 degrees");
-  syringeServo.writeMicroseconds(1000);
-  delay(1000);
-  Serial.println("Moving to 90 degrees");
-  syringeServo.writeMicroseconds(1500);
-  delay(1000);
-  Serial.println("Moving to 180 degrees");
-  syringeServo.writeMicroseconds(2000);
-  delay(1000);
-}
-
-void moveServoToNext() {
-  if(millis() - moveTime < WAIT_TIME) return;   //Don't move servo if its been less than 1.5 s
-  moveTime = millis();
-  
-  if(++currPos > 4) currPos = 0;
-  Serial.print("Moving servo to ");
-  Serial.print(servoPos[currPos]);
-  Serial.println(" ms");
-  syringeServo.writeMicroseconds(servoPos[currPos]);
-}
-*/
 
 #endif

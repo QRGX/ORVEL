@@ -1,11 +1,10 @@
 //Please note: The base of the code for the MPU6050 is from the work of Jeff Rowberg (https://github.com/jrowberg/i2cdevlib)
-
-#include "Arduino.h"
 #ifndef accl_h
 #define accl_h
 
+#include "Arduino.h"
+#include "math.h"
 #include "I2Cdev.h"
-#include "util.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
@@ -37,6 +36,14 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 float accel[3], avg = 0;
 int ind = 0;
 
+const float ACCEL_DIV[4] = {16384.0, 8192.0, 4096.0, 2048.0};
+const int ACCEL_RANGE[4] = {2, 4, 8, 16};
+int ACCEL_VAL = 2;
+
+float norm(float x, float y, float z) {
+  return abs(x) + abs(y) + abs(z);
+}
+
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
 // ================================================================
@@ -59,71 +66,79 @@ float getAvg(float newVal) {
   return avg = retAvg();
 }
 
+//Set Accelerometer sensitivity
+void setAccel(int val) {
+  if (val < 0 || val > 3) val = 3;
+  ACCEL_VAL = val;
+  mpu.setFullScaleAccelRange(val);
+}
+
 
 void setupAccl() {
 	// join I2C bus (I2Cdev library doesn't do this automatically)
-    Wire.begin();
-    Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  Wire.begin();
+  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 	
 	// initialize device
-    Serial.println(F("Initializing I2C devices..."));
-    mpu.initialize();
-    pinMode(INTERRUPT_PIN, INPUT);
+  DEBUG_PRNTLN("Initializing Accelerometer");
+  mpu.initialize();
+  pinMode(INTERRUPT_PIN, INPUT);
 
-    // verify connection
-    Serial.println(F("Testing device connections..."));
-    Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
+  // verify connection
+  DEBUG_PRNTLN("Testing device connections...");
+  DEBUG_PRNTLN(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 	
 	// load and configure the DMP
-    devStatus = -1;
-    while(devStatus != 0) {
-      delay(1500);
-      Serial.println(F("Initializing DMP..."));
-      devStatus = mpu.dmpInitialize();
-    }
-    // supply your own gyro offsets here, scaled for min sensitivity
-    mpu.setXGyroOffset(91);
-    mpu.setYGyroOffset(12);
-    mpu.setZGyroOffset(33);
-    
-    // Accelerometer offsets
-    /*
-    mpu.setXAccelOffset(-444);
-    mpu.setYAccelOffset(-1620);
-    mpu.setZAccelOffset(1700); 
-    */
-    mpu.setXAccelOffset(0);
-    mpu.setYAccelOffset(0);
-    mpu.setZAccelOffset(1600); 
+  devStatus = -1;
+  while(devStatus != 0) {
+    delay(1500);
+    DEBUG_PRNTLN(F("Initializing DMP..."));
+    devStatus = mpu.dmpInitialize();
+  }
+  // supply your own gyro offsets here, scaled for min sensitivity
+  mpu.setXGyroOffset(91);
+  mpu.setYGyroOffset(12);
+  mpu.setZGyroOffset(33);
+  
+  // Accelerometer offsets
+  mpu.setXAccelOffset(0);
+  mpu.setYAccelOffset(0);
+  mpu.setZAccelOffset(1600); 
     
   
 	// make sure it worked (returns 0 if so)
-    if (devStatus == 0) {
-        // turn on the DMP, now that it's ready
-        Serial.println(F("Enabling DMP..."));
-        mpu.setDMPEnabled(true);
+  if (devStatus == 0) {
+      // turn on the DMP, now that it's ready
+      DEBUG_PRNTLN(F("Enabling DMP..."));
+      mpu.setDMPEnabled(true);
 
-        // enable Arduino interrupt detection
-        Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
-        //attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmpDataReady, RISING);
-        attachInterrupt(INTERRUPT_PIN, dmpDataReady, RISING);
-        mpuIntStatus = mpu.getIntStatus();
+      // enable Arduino interrupt detection
+      DEBUG_PRNTLN("Enabling interrupt detection (Arduino external interrupt 0)...");
+      //attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmpDataReady, RISING);
+      attachInterrupt(INTERRUPT_PIN, dmpDataReady, RISING);
+      mpuIntStatus = mpu.getIntStatus();
 
-        // set our DMP Ready flag so the main loop() function knows it's okay to use it
-        Serial.println(F("DMP ready! Waiting for first interrupt..."));
-        dmpReady = true;
+      // set our DMP Ready flag so the main loop() function knows it's okay to use it
+      DEBUG_PRNTLN("DMP ready! Waiting for first interrupt...");
+      dmpReady = true;
 
-        // get expected DMP packet size for later comparison
-        packetSize = mpu.dmpGetFIFOPacketSize();
-    } else {
-        // ERROR!
-        // 1 = initial memory load failed
-        // 2 = DMP configuration updates failed
-        // (if it's going to break, usually the code will be 1)
-        Serial.print(F("DMP Initialization failed (code "));
-        Serial.print(devStatus);
-        Serial.println(F(")"));
-    }
+      // get expected DMP packet size for later comparison
+      packetSize = mpu.dmpGetFIFOPacketSize();
+
+      //Setting MPU Sensitivity range
+      setAccel(ACCEL_VAL);  
+      DEBUG_PRNT("Initial sensitivity: +-");
+      DEBUG_PRNT(ACCEL_RANGE[ACCEL_VAL]);
+      DEBUG_PRNTLN(" G");
+  } else {
+      // ERROR!
+      // 1 = initial memory load failed
+      // 2 = DMP configuration updates failed
+      // (if it's going to break, usually the code will be 1)
+      DEBUG_PRNT("DMP Initialization failed (code ");
+      DEBUG_PRNT(devStatus);
+      DEBUG_PRNTLN(")");
+  }
 }
 void pullData() {
 	// if programming failed, don't try to do anything
@@ -135,13 +150,10 @@ void pullData() {
   mpuIntStatus = mpu.getIntStatus();
   fifoCount = mpu.getFIFOCount();
 
-  //Check for queue overflow
-  //if(fifoCount > 512)
-    //mpu.resetFIFO();
-  
+  //Make sure the queue isn't overflowing (and clear if it is)
   if((mpuIntStatus & 0x10) || fifoCount == 1024) {
     mpu.resetFIFO();
-    Serial.println("FIFO OVERFLOW!");
+    DEBUG_PRNTLN("FIFO OVERFLOW!");
     return;
   }
   //Check for data ready

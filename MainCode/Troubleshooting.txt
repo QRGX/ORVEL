@@ -1,6 +1,8 @@
 Notes to self for troubleshooting
 
-Connection problems
+-If the due seems to be off even though its plugged in
+	-Make sure that the ground and VCC for one of the components isn't mixed up 
+		-> The due should be shutting itself down (causing the problem) to protect itself...
 -If both the accelerometer and temp sensor aren't connecting
 	-Check that the SCL/SDA pins being used are those with built-in pullup resistors (i.e. pins 20 and 21)
 	-Make sure the SCL/SDA pins are plugged into the right ports
@@ -20,4 +22,7 @@ Connection problems
 		-SCL
 		-SDA
 	-Make sure the setup function isn't commented out
-	
+-If just the servo isn't working
+	-Make sure the SDA/SCL from the servo controller is going into SDA1/SCL1 on the due
+	-Make sure that the controller has power to V+ (I think 3.3-5V)
+	-Make sure the servo is plugged into input 1 on the controller

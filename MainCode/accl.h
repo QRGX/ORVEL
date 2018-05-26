@@ -86,7 +86,14 @@ void setupAccl() {
 
   // verify connection
   DEBUG_PRNTLN("Testing device connections...");
-  DEBUG_PRNTLN(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
+  bool check = false;
+  int tries = 5;
+  while(!(check = mpu.testConnection()) && tries-- > 0) {
+    DEBUG_PRNTLN(check ? "MPU6050 connection successful" : "MPU6050 connection failed");
+    delay(200);
+  }
+  
+  if(!check) return;
 	
 	// load and configure the DMP
   devStatus = -1;

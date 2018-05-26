@@ -19,5 +19,23 @@
 
 #define PACKET_START 's'
 #define SERVO_MOVE   'm'
+#define DEVICE_POWER  3
+#define WAIT_TIME    1000
+
+bool devicesOn = false;
+void restartDevices();
+
+void setupDevices() {
+  pinMode(DEVICE_POWER, OUTPUT);
+  restartDevices();
+}
+
+void restartDevices() {
+  DEBUG_PRNTLN("Restarting external devices");
+  digitalWrite(DEVICE_POWER, LOW);
+  delay(WAIT_TIME);
+  digitalWrite(DEVICE_POWER, HIGH);
+  delay(WAIT_TIME);
+}
 
 #endif

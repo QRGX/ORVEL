@@ -28,11 +28,9 @@ void writeToServo(short servoN, long us) {
   double pulseLength = 1000000; // 1 second, or 1MM 1us per second
   pulseLength /= 60 * 4096;   // 60Hz rate and 12-bit converter
   pulseLength = us / pulseLength;
-
   //Make sure it doesn't exceed operating bounds
   if(pulseLength < SERVO_MIN) pulseLength = SERVO_MIN;
   else if(pulseLength > SERVO_MAX) pulseLength = SERVO_MAX;
-  
   controller.setPWM(servoN, 0, pulseLength);
 }
 

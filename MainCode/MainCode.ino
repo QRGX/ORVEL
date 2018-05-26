@@ -13,6 +13,7 @@ void setup() {
   while (!Serial);
   DEBUG_PRNTLN("Starting setup");
 
+  setupDevices();
   setupServo();
   setupAccl();
   setupTemp();
@@ -39,11 +40,13 @@ void mediumLoop() {
 
 void slowLoop() { //Measured at 4.67ms
   checkIncoming();
-  writeDataToLaptop();
+  #ifndef DEBUG_MODE
+    writeDataToLaptop();
+  #endif
   
   //Test print options
   //testServo();
-  //writeGNet();
+  writeGNet();
   //writeGyroVals();
   //writeAccelVals();
   //writeTempVals();
@@ -61,8 +64,10 @@ void checkIncoming() {
   if(Serial.available() <= 0) return;
   char currByte = Serial.read();
   if(lastByte == PACKET_START) {
-    if(currByte == SERVO_MOVE)
+    if(currByte == SERVO_MOVE) {
       testServo();
+      DEBUG_PRINTLN("Testing Servo");
+    }
   }
   lastByte = currByte;
 }

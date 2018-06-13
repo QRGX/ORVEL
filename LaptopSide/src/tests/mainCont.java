@@ -33,6 +33,8 @@ public class mainCont {
 	@FXML
 	public void reset() {plot.reset(); }
 	@FXML
+	public void plotScale() {plot.plotScale(); }
+	@FXML
 	public void initialize() {
 		plot = new realTimePlot(plotCan);
 		plot.initialize();

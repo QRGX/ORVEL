@@ -82,7 +82,7 @@ public class SerialCommunicator {
 		boolean read = readThread == null, time = timer == null;
 		if(time) {
 			timer = new Timer();
-			timer.schedule(new ThreadCheck(), 0, 100);
+			timer.schedule(new ThreadCheck(), 0, 250);
 			log.severe("Timer was started!");
 		}
 		

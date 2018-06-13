@@ -68,7 +68,7 @@ public class readPackets implements Runnable {
 			} else if(in == null)
 				in = comm.getInputStream();
 			
-			try {if(in.available()  <= 0) {continue; }} catch(IOException e) {} //Don't proceed if there are not bytes availible to read.
+			try {if(in.available()  <= PACKET_LENGTH) {continue; }} catch(IOException e) {continue; } //Don't proceed if there are not bytes availible to read.
 			log.warning("something");
 			//Collection
 			if(badData < 50 && !badRun)

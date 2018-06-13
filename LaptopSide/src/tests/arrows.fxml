@@ -19,5 +19,6 @@
       <Button layoutX="399.0" layoutY="355.0" mnemonicParsing="false" onAction="#testMore" text="addPoint" />
       <Button layoutX="342.0" layoutY="355.0" mnemonicParsing="false" onAction="#clear" text="Clear" />
       <Button layoutX="546.0" layoutY="15.0" mnemonicParsing="false" onAction="#reset" text="reset" />
+      <Button layoutX="269.0" layoutY="355.0" mnemonicParsing="false" onAction="#plotScale" text="Plot Scale" />
    </children>
 </Pane>

@@ -1,5 +1,6 @@
 package tests;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -9,6 +10,7 @@ import javafx.scene.text.Text;
 public class realTimePlot {
 	Canvas plotCan;
 	private boolean canInit = false;
+	private static final DecimalFormat df = new DecimalFormat("#.##");
 	double canWidth, canHeight, xCanOffset, yCanOffset, plotHeight, plotWidth;
 	double maxY, minY, xScale, yScale;
 	float XMargin, YMargin;
@@ -17,7 +19,11 @@ public class realTimePlot {
 	GraphicsContext gc;
 	point plotOrigin, xAxisLimit, yAxisLimit;
 	ArrayList<point> data;
+	Text[] axisTicks = new Text[4];
+	Text xLabel, yLabel;
 	
+	static final int tickWidth = 8;
+	static final double[] marks = {.25, .5, .75, 1};
 	static final float XAxisOffset = (float) 0.2, YAxisOffset = (float) 0.2;
 	static final float XMarginRatio = (float) 0.05, YMarginRatio = (float) 0.05;
 	
@@ -51,6 +57,8 @@ public class realTimePlot {
 		canHeight = plotCan.getHeight();
 		XMargin = (float) canWidth * XMarginRatio;
 		YMargin = (float) canHeight * YMarginRatio;
+		plotAxis();
+		plotScale();
 	}
 	@FXML
 	void plotAxis() {
@@ -68,9 +76,9 @@ public class realTimePlot {
 		gc.strokeLine(plotOrigin.x, canHeight - plotOrigin.y, yAxisLimit.x, canHeight - yAxisLimit.y);
 		
 		//Axis labels
-		Text xLabel = new Text(xLabelCoord + xCanOffset, canHeight - (plotOrigin.y - (YAxisOffset * canHeight * .25)) + yCanOffset, xAxisLabel);
+		xLabel = new Text(xLabelCoord + xCanOffset, canHeight - (plotOrigin.y - (YAxisOffset * canHeight * .25)) + yCanOffset, xAxisLabel);
 		xLabel.setX(xLabelCoord + xCanOffset - xLabel.getLayoutBounds().getWidth() / 2);
-		Text yLabel = new Text(xCanOffset + XMargin - 25, yLabelCoord + yCanOffset, yAxisLabel);
+		yLabel = new Text(xCanOffset + XMargin - 25, yLabelCoord + yCanOffset, yAxisLabel);
 		yLabel.setRotate(-90);
 		plotTest.root.getChildren().addAll(xLabel, yLabel);
 		canInit = true;
@@ -86,6 +94,7 @@ public class realTimePlot {
 			else if(pt.y > maxY) maxY = pt.y;
 		}
 		yScale = yAxisLimit.y*.95 / (maxY - minY); 
+		updateTicks();
 	}
 	
 	//Plot configuration
@@ -105,17 +114,45 @@ public class realTimePlot {
 	private void plotPoint(point newPoint) {
 		if(newPoint.x < XMargin + 1) return;
 		point coord = new point(newPoint.x, canHeight - (YMargin + 2 + Math.abs(minY)*yScale + newPoint.y*yScale));
-		System.out.println(coord);
+		//System.out.println(coord);
 		gc.strokeRect(coord.x, coord.y, 1, 1);
 	}
 	
+	public void plotScale() {
+		boolean fakeMax = maxY == 0;
+		maxY = fakeMax? 1 : maxY;
+		point tmp;
+		double maxWidth = 0, tmpWidth;
+		for(int i=0;i<marks.length;i++) {
+			tmp = new point(plotOrigin.x-tickWidth, canHeight - (YMargin + 2 + Math.abs(minY)*yScale + marks[i]*maxY*yScale) - 1);
+			gc.strokeRect(tmp.x, tmp.y, tickWidth, 1);
+			axisTicks[i] = new Text(plotOrigin.x-tickWidth+xCanOffset, tmp.y + yCanOffset + 5, df.format(marks[i]*maxY));
+			tmpWidth = axisTicks[i].getLayoutBounds().getWidth();
+			axisTicks[i].setX(plotOrigin.x-tickWidth+xCanOffset - tmpWidth*1.2);
+			maxWidth = (maxWidth < tmpWidth)? tmpWidth : maxWidth;
+		}
+		yLabel.setX(xCanOffset + XMargin - 25 - maxWidth*1.5);
+		plotTest.root.getChildren().addAll(axisTicks);
+		maxY = fakeMax? 0 : maxY;
+	}
+	private void updateTicks() {
+		double maxWidth = 0, tmpWidth;
+		for(int i=0;i<axisTicks.length;i++) {
+			axisTicks[i].setText(df.format(marks[i]*maxY));
+			tmpWidth = axisTicks[i].getLayoutBounds().getWidth();
+			axisTicks[i].setX(plotOrigin.x-tickWidth+xCanOffset - tmpWidth*1.2);
+			maxWidth = (maxWidth < tmpWidth)? tmpWidth : maxWidth;
+		}
+	}
 	//Data management methods
-	@FXML
 	public void clear() {
 		point size = new point(xAxisLimit.x - plotOrigin.x, yAxisLimit.y - plotOrigin.y + 5);
 		point base = new point(plotOrigin.x + 1, plotOrigin.y + 1 + size.y);
+		int tickBase = 15;
 		
 		gc.clearRect(base.x, canHeight - base.y, size.x, size.y); 
+		System.out.println(yAxisLimit.y - plotOrigin.y);
+		gc.strokeRect(base.x - tickBase - 2, canHeight - base.y + 6, tickBase, yAxisLimit.y - plotOrigin.y);
 	}
 	@FXML
 	public void reset() {clear(); data.clear(); }

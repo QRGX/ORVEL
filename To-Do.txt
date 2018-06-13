@@ -12,4 +12,3 @@ To-Do List:
 -Look into getting a PCB printed for components
 -Figure out how to put fuses in the circuit
 -Figure out how to seal box
--Split Ethernet cable for serial and 3-pin video feed 

@@ -46,7 +46,7 @@ void slowLoop() { //Measured at 4.67ms
   
   //Test print options
   //testServo();
-  writeGNet();
+  //writeGNet();
   //writeGyroVals();
   //writeAccelVals();
   //writeTempVals();
@@ -63,12 +63,22 @@ void writeDataToLaptop() {
 void checkIncoming() {
   if(Serial.available() <= 0) return;
   char currByte = Serial.read();
-  if(lastByte == PACKET_START) {
-    if(currByte == SERVO_MOVE) {
-      testServo();
-      DEBUG_PRINTLN("Testing Servo");
+  //if(lastByte == PACKET_START) {
+    switch(currByte)  {
+      case SERVO_MOVE:
+        testServo();
+        DEBUG_PRINTLN("Testing Servo");
+        break;
+      case SERVO_UP:
+        up();
+        break;
+      case SERVO_DOWN:
+        down();
+        break;
     }
-  }
+    Serial.print(currByte);
+    Serial.println("received, action taken");
+  //}
   lastByte = currByte;
 }
 

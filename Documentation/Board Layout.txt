@@ -1,0 +1,60 @@
+Board Layout:
+
+The order of the pins on the prototyping board is:
+[][][][][][]  [][][][][][]  [][][]  [][][][][][][][]
+SERVO DRIVER   PRESSURE	  TRANSISTOR ACCELEROMETER
+
+	[][][][][][][][] [][][][][][][][]
+	  PIN BANK TWO	   PIN BANK ONE
+	  
+The order of the pins, from left to right on each bank is as follows:
+Servo Driver:
+	-V+
+	-VCC
+	-SDA
+	-SCL
+	-OE
+	-GROUND
+
+PRESSURE
+	-VCC
+	-GROUND
+	-SCL
+	-SDA
+	-CSB
+	-SDO
+	
+TRANSISTOR
+	-COLLECTOR
+	-BASE
+	-EMMITTER
+	
+ACCELEROMETER
+	-INTERUPT
+	-ADO
+	-XCL
+	-XDA
+	-SDA
+	-SCL
+	-GROUND
+	-VCC
+	
+PIN BANK TWO
+	-NOTHING
+	-NOTHING
+	-NOTHING
+	-NOTHING
+	-NOTHING
+	-NOTHING
+	-SERVO SCL
+	-SERVO SDA
+	
+PIN BANK ONE
+	-NOTHING
+	-ACCELEROMETER INTERUPT
+	-TRANSISTOR BASE
+	-V+
+	-VCC / TRANSISTOR COLLECTOR
+	-GROUND
+	-SCL
+	-SDA

@@ -19,8 +19,10 @@
 
 #define PACKET_START 's'
 #define SERVO_MOVE   'm'
+#define SERVO_UP     'u'
+#define SERVO_DOWN   'd'
 #define DEVICE_POWER  3
-#define WAIT_TIME    1000
+#define WAIT_TIME    800
 
 bool devicesOn = false;
 void restartDevices();

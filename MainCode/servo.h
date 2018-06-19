@@ -7,10 +7,19 @@
 #include "Adafruit_PWMServoDriver.h"
 
 Adafruit_PWMServoDriver controller;
+void mv(int dist);
 
 #define SERVO_MIN 150
 #define SERVO_MAX 600
+
+#define PIN 5
+#define MIN 1000
+#define MAX 2000
+#define NEUTRAL 1995
+#define INCREMENT 5
+
 long currAngle = 1500, lastTime = 0;
+int pos;
 
 void setupServo() {
   DEBUG_PRNTLN("Setting up servo");
@@ -39,6 +48,21 @@ void testServo() {
   lastTime = millis();
   currAngle = (currAngle == 2350)? 625 : 2350;
   writeToServo(0, currAngle);
+}
+
+void up() {
+  mv(INCREMENT);
+}
+void down() {
+  mv(-INCREMENT);
+}
+
+void mv(int dist) {
+  if(currAngle + dist > MIN && currAngle + dist < MAX)
+    currAngle += dist;
+  writeToServo(0, currAngle);
+  Serial.print("Position: ");
+  Serial.println(pos);
 }
 
 #endif

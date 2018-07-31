@@ -18,6 +18,8 @@
 #endif
 
 #define PACKET_START 's'
+#define OVERRIDE     'G'
+#define SAFETY_STOP  'K'
 #define SERVO_MOVE   'm'
 #define SERVO_UP     'u'
 #define SERVO_DOWN   'd'

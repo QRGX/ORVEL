@@ -6,6 +6,7 @@
 long startTime, accelTime, tempTime, loopTime, loopStart;
 char lastByte;
 short loopCount;
+bool kill_override = false;
 
 
 void setup() {
@@ -40,6 +41,7 @@ void mediumLoop() {
 
 void slowLoop() { //Measured at 4.67ms
   checkIncoming();
+  safetyCheck();
   #ifndef DEBUG_MODE
     writeDataToLaptop();
   #endif
@@ -53,6 +55,40 @@ void slowLoop() { //Measured at 4.67ms
   //writeCollectionTime();
 }
 
+void safetyCheck() {
+  if(kill_override) return;
+  
+  float acceleration = norm(aa.x, aa.y, aa.z) / ACCEL_DIV[ACCEL_VAL] - .17;
+  float _pressure = pressure / 1000.0;
+
+  //Accel check
+  if(acceleration > 2)
+    Serial.println("WARNING: acceleration has exceeded 2g");
+
+  //Air pressure check
+  if(_pressure < 95) {
+    Serial.println("WARNING: pressure below 95 kpa, entering kill loop.");
+    killLoop();
+  }
+}
+
+void killLoop() {
+  while(true && !kill_override) {
+    Serial.println("Experiment killed. Parameters outside safe range. (G to override)");
+    delay(1000);
+    if(Serial.available() > 0) {
+      char letter = Serial.read();
+      
+      if(letter == OVERRIDE) {
+        Serial.println("Overriding failsafe, breaking safety loop");
+        kill_override = true;
+        return;
+      } else
+        Serial.println("Character not recognised, enter G to override");
+    }
+  }
+}
+
 void writeDataToLaptop() {
   Serial.write(norm(aa.x, aa.y, aa.z) / ACCEL_DIV[ACCEL_VAL] - .17);  //Give Acceleration in Gs
   Serial.write(tempC);                                                //Give Temperature in C
@@ -60,6 +96,7 @@ void writeDataToLaptop() {
   Serial.write(loopTime);                                             //Give last loop time in us
 }
 
+//NOTE: To kill experiment enter K
 void checkIncoming() {
   if(Serial.available() <= 0) return;
   char currByte = Serial.read();
@@ -74,6 +111,9 @@ void checkIncoming() {
         break;
       case SERVO_DOWN:
         down();
+        break;
+      case SAFETY_STOP:
+        killLoop();
         break;
     }
     Serial.print(currByte);
